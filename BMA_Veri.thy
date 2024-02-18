@@ -1,6 +1,5 @@
 theory BMA_Veri
-  imports (* Refine_Imperative_HOL.IICF*)
-    "HOL-Library.Sublist"
+  imports  "HOL-Library.Sublist"
 begin
 
 fun bmSearch :: "'a list \<Rightarrow> 'a list \<Rightarrow> bool" where
@@ -9,15 +8,26 @@ fun bmSearch :: "'a list \<Rightarrow> 'a list \<Rightarrow> bool" where
   "bmSearch (xs#zs) (ys#y) = undefined"
 
 
-fun sublist_at :: "'a list \<Rightarrow> 'a list \<Rightarrow> bool" where
-  "sublist_at "
+(*fun sublist_at :: "'a list \<Rightarrow> 'a list \<Rightarrow> bool" where
+  "sublist_at "*)
 
 (*fun first_occurrence *)
+fun first_occurrence :: "'a list \<Rightarrow> 'a \<Rightarrow> nat option" where
+  "first_occurrence [] _ = None"
+| "first_occurrence (x # xs) y = (if x = y then Some 0 else map_option Suc (first_occurrence xs y))"
+
+(*fun last_occurrence TODO *)
 fun last_occurrence :: "'a list \<Rightarrow> 'a \<Rightarrow> nat option" where
   "last_occurrence [] _ = None"
-| "last_occurrence (x # xs) y = (if x = y then Some 0 else map_option Suc (last_occurrence xs y))"
+| "last_occurrence (?xs # x) y = (if x = y then Some 0 else map_option Suc (last_occurrence xs y))"
 
 fun bad_character_rule :: "'a list \<Rightarrow> nat \<Rightarrow> 'a \<Rightarrow> nat" where
+(*if we fand Bad_Cha: schift to right = index of bad_cha -  Rightmost index of BC at pattern
+  if pattern dosent contain BC, then -1 as Rightmostt index
+  e.g. "A SIMPLE" P is BadCha
+      "EXAMPLE"
+  to   "A SIMPLE"  alignment 'P'
+     \<Rightarrow> "EXAMPLE" *)
   "bad_character_rule pattern j mismatch_char =
     (case last_occurrence (take j pattern) mismatch_char of
       None \<Rightarrow> j + 1
@@ -25,6 +35,8 @@ fun bad_character_rule :: "'a list \<Rightarrow> nat \<Rightarrow> 'a \<Rightarr
     )"
 
 fun good_suffix_rule :: "'a list \<Rightarrow> 'a list \<Rightarrow> nat" where
+(*if mismatch: schift = GoodSuff index at pattern - GS last occur at pattern(shang yi ci)
+ if GS dont occur in pattern again, then this -1 as num  *)
   "good_suffix_rule pattern suffix =
     (let m = length pattern;
          n = length suffix;
@@ -33,6 +45,14 @@ fun good_suffix_rule :: "'a list \<Rightarrow> 'a list \<Rightarrow> nat" where
      in
        (let f = index (map (op ! n) (filter (\<lambda>i. z ! i = m - 1) [0..<n]))
     )"
+
+(* String -> [(Char, Int)]*)
+fun generate_bad_char_table :: "string \<Rightarrow> (char \<times> nat) list" where
+  "generate_bad_char_table pattern = rev (zip pattern (rev (upt (length pattern - 1) 0)))"
+
+(* String -> [Int]*)
+fun generate_good_suffix_table :: "string \<Rightarrow> nat list" where
+  "generate_good_suffix_table pattern = rev (concat (map (\<lambda>i. filter (\<lambda>j. is_suffix pattern j) (rev (take i (upt 1 (length pattern - 1))))) (rev (upt 1 (length pattern - 1)))))"
 
 fun boyer_moore_search :: "'a list \<Rightarrow> 'a list \<Rightarrow> nat option" where
   "boyer_moore_search text pattern =
@@ -49,5 +69,7 @@ fun boyer_moore_search :: "'a list \<Rightarrow> 'a list \<Rightarrow> nat optio
         done;
         None
     )"
+-- test case
+value "boyer_moore_search ''ABAAABCD'' ''ABC''"
 
 end
