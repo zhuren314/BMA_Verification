@@ -7,9 +7,6 @@ fun bmSearch :: "'a list \<Rightarrow> 'a list \<Rightarrow> bool" where
   "bmSearch [] _ = True" |
   "bmSearch (xs#zs) (ys#y) = undefined"
 
-(*fun sublist_at :: "'a list \<Rightarrow> 'a list \<Rightarrow> bool" where
-  "sublist_at "*)
-
 fun first_occurrence :: "'a list \<Rightarrow> 'a \<Rightarrow> nat option" where
   "first_occurrence [] _ = None" |
   "first_occurrence (x # xs) y = (if x = y then Some 0 else map_option Suc (first_occurrence xs y))"
@@ -20,6 +17,11 @@ fun last_occurrence :: "'a list \<Rightarrow> 'a \<Rightarrow> nat option" where
    (let l = length xs
     in 
     map_option (\<lambda>n. l - n - 1) (first_occurrence (rev xs) y))"
+
+(* sublist_at: ys previous occur from right at xs *)
+fun pre_occur :: "'a list \<Rightarrow> 'a list \<Rightarrow> nat option" where
+  "pre_occur [] _ = None" |
+  "pre_occur xs ys = undefined"
 
 (* String -> [(Char, Int)]*)
 fun generate_bad_char_table :: "string \<Rightarrow> (char \<times> nat) list" where
@@ -45,11 +47,12 @@ fun bad_character_rule :: "string \<Rightarrow> nat \<Rightarrow> char \<Rightar
       None \<Rightarrow> j + 1 |
       Some k \<Rightarrow> j - k
     )"
-
-fun good_suffix_rule :: "string \<Rightarrow> string \<Rightarrow> nat" where
+(*
+fun good_suffix_rule :: "'a list \<Rightarrow> 'a list \<Rightarrow> nat" where
 (* If there is a mismatch: shift = GoodSuff index at pattern - Last occurrence index of GS in pattern (上一次出现的索引)
  If GS does not occur in pattern again, then this will be -1 *)
-  "good_suffix_rule pattern suffix =
+  "good_suffix_rule pattern (y :: ys) =
+   
     (let m = length pattern;
          n = length suffix;
          z = generate_good_suffix_table pattern
@@ -86,9 +89,11 @@ fun boyer_moore_search :: "string \<Rightarrow> string \<Rightarrow> nat option"
               j := m - 1))
         done;
         None
-    )"
+    )"*)
 
+(*test*)
+value "boyer_moore_search ''ABAAABCD'' ''ABC'' "
 
-value "boyer_moore_search ''ABAAABCD'' ''ABC''"
+value "generate_good_suffix_table ''abcaacbaabacab''"
 
 end
